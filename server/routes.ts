@@ -1,10 +1,12 @@
 // What this site's function sends on to the Petiole API: these routes, and
-// nothing else. A starter adds the routes its app calls; the function
-// refuses everything else.
+// nothing else. The app calls one model, the leaf detector. To call
+// another, add its routes here; the function refuses everything else.
 
-/** This starter, as the function names itself to the API (User-Agent):
- * its repository's name. */
-export const NAME = "petiole-starter-react-skeleton";
+/** This starter, as the function names itself to the API (User-Agent). */
+export const NAME = "petiole-starter-react-predictions";
+
+/** The model the app calls. */
+export const MODEL_ID = "leaf-detector";
 
 export interface Route {
   method: "GET" | "POST";
@@ -19,4 +21,9 @@ export interface Route {
 export const ROUTES: readonly Route[] = [
   // The key checked, and the models it may call.
   { method: "GET", path: "/v1/models", query: ["limit", "startingAfter"] },
+  { method: "GET", path: `/v1/models/${MODEL_ID}` },
+  // Whether the model can answer now. Asking wakes it.
+  { method: "GET", path: `/v1/models/${MODEL_ID}/status` },
+  // A photo, and what the model found in it.
+  { method: "POST", path: `/v1/models/${MODEL_ID}/predictions`, body: true },
 ];

@@ -1,67 +1,36 @@
-# &lt;What it does, in a few words&gt;: a Petiole API starter for the web
+# Leaf detector: a Petiole API starter for the web
 
-&lt;One sentence: what someone gets from it, on the [Petiole API](https://platform.petiole.pro).&gt;
-A small, complete React app on Netlify, to copy and build your own on.
+Find the leaves in a photo with the [Petiole API](https://platform.petiole.pro)'s
+leaf detector, and see them drawn on it. A small, complete React app on
+Netlify, to copy and build your own on.
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/getpetiole/petiole-starter-react-KIND)
-
-## Making a starter from this skeleton
-
-This section is the checklist of the family's conventions
-(`docs/system/starters.md` in Petiole's platform repository). Tick each,
-then delete the section.
-
-- [ ] Copied into a new public repository of `getpetiole`,
-      `petiole-starter-react-<kind>`, whose first commit is this skeleton
-      as it is, and whose CI passed on it.
-- [ ] Named: `package.json`'s `name`, `NAME` in `server/routes.ts`, the
-      Deploy to Netlify link above, the page's title, header and footer.
-- [ ] `server/routes.ts` lists every route the app calls, and only those;
-      the contract test proves the spec has each, and that the function
-      refuses every other.
-- [ ] `NEEDS` in `src/App.tsx` and `.env.example` say which workflows a
-      key for it needs.
-- [ ] The words and the drawing: a detection as a box with its label and
-      score; an outline as a filled polygon; a measurement with its unit
-      from `GET /v1/object-types`; a score called the model's confidence,
-      never a probability; an error in words, with the request's ID to
-      quote (`src/lib/messages.ts`).
-- [ ] No telemetry, no third-party scripts, no fonts from elsewhere: the
-      Content Security Policy in `netlify.toml` stays as strict.
-- [ ] Production only: the function calls `https://api.petiole.pro`, keys
-      are `ptl_live_`.
-- [ ] The README's sections below, each filled in; a picture of the app
-      at work in `docs/screenshot.png`.
-- [ ] `CHANGELOG.md` has the first version, and the `@petiole/sdk` version
-      it was tested with; so does the README's Development section.
-- [ ] Unit, contract and end-to-end tests of what the app does; CI green.
-- [ ] On GitHub: a template repository ("Use this template"), its
-      description and topics (`petiole`, `petiole-api`, `starter`), private
-      vulnerability reporting on.
-- [ ] Deployed to Netlify from the button with a key of production, and
-      used end to end.
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/getpetiole/petiole-starter-react-predictions)
 
 ## What it does
 
-&lt;What a visitor does, and what they get back. Plain words; what the API
-calls a score is the model's confidence.&gt;
+You paste your API key, then drop a photo of leaves, choose one, or take
+one with a phone's camera. The app sends it to the leaf detector and
+draws what came back on the photo: a box round each leaf, with its label
+and the model's confidence. A slider sets the least confidence shown;
+the leaves are counted and listed in a table, and you can download them
+as CSV, as JSON, or as the photo with the boxes drawn on it (PNG).
 
-![&lt;What the picture shows&gt;](docs/screenshot.png)
+![The app with a leaf found on a photo of the calibration pad, at 98% confidence](docs/screenshot.png)
 
 ## Five minutes to a first answer
 
 1. Make an API key on [Keys & access](https://platform.petiole.pro/keys)
-   in the Petiole platform, for this app only: with &lt;the workflows it
-   needs&gt; and an expiry.
+   in the Petiole platform, for this app only: with the **Leaf area**
+   workflow, which runs the leaf detector, and an expiry.
 2. Press **Deploy to Netlify** above. Netlify copies this repository to
    your GitHub account and builds the site, in about a minute.
-3. Open the site, paste the key, and &lt;the first thing to do&gt;.
+3. Open the site, paste the key, and choose a photo of leaves.
 
 Or on your computer, with Node 24:
 
 ```sh
-git clone https://github.com/getpetiole/petiole-starter-react-KIND.git
-cd petiole-starter-react-KIND
+git clone https://github.com/getpetiole/petiole-starter-react-predictions.git
+cd petiole-starter-react-predictions
 npm ci
 npm run dev
 ```
@@ -88,7 +57,7 @@ the site's own function, `/api`, which calls the API with the key.
   Netlify's password protection: every visitor spends that key's
   allowance.
 
-Make a key for this app alone, with only the workflows it needs and an
+Make a key for this app alone, with only the workflow it needs and an
 expiry. Your organisation's daily limits bound what any key can spend,
 even one that leaks; if one does, revoke it on Keys & access, and it is
 refused within a minute.
@@ -107,8 +76,15 @@ the rest:
   `/api`.
 
 Netlify takes at most 6 MB in a request, and a photo's bytes are sent
-base64-encoded, so about 4.5 MB of photo; a function may take 60 s.
-&lt;How the app keeps within them.&gt;
+base64-encoded, so about 4.5 MB of photo. A JPEG or PNG within that is
+sent as it is; anything larger, or another kind of photo the browser can
+open, is drawn upright and encoded as a JPEG in the browser, at its own
+size and a lower quality until it fits. What comes back is in fractions
+of the photo, so it fits the original.
+
+A model that has been idle sleeps, and waking it takes up to a minute.
+The app asks the leaf detector's state as it opens, which wakes it, and
+sends a photo only once it is ready, so no call waits out its start.
 
 ## What it calls
 
@@ -118,6 +94,9 @@ The site's function forwards these routes of the Petiole API, at
 | Route | What for |
 | --- | --- |
 | `GET /v1/models` | The key checked, and the models it may use |
+| `GET /v1/models/leaf-detector` | The leaf detector |
+| `GET /v1/models/leaf-detector/status` | Whether it is ready; asking wakes it |
+| `POST /v1/models/leaf-detector/predictions` | A photo, and the leaves it found |
 
 The page calls them with the Petiole TypeScript SDK,
 [`@petiole/sdk`](https://www.npmjs.com/package/@petiole/sdk), pointed at
@@ -126,13 +105,18 @@ its errors included; each error is shown in words, with the request's ID
 to quote if you contact Petiole. It logs one line a request (the route,
 the status, the time and the request's ID), never a key.
 
+To call another model, add its routes to `server/routes.ts`.
+
 ## What it does not do
 
-&lt;What someone might expect of it that it leaves out, and where to find
-it instead.&gt;
-
+- **Measure.** A model finds things; it measures nothing. For the leaves'
+  areas in cm², use a workflow, such as Leaf area, through an analysis
+  (`POST /v1/analyses`).
 - **Keep anything.** No database, no accounts, no analytics, no
-  third-party scripts. A key stays in the visitor's browser.
+  third-party scripts. A key stays in the visitor's browser, a photo in
+  the page.
+- **Upload large photos.** Uploads by signed URL take PUTs from the
+  Petiole platform's own pages only, so a photo goes in the request.
 
 ## Development
 
@@ -149,10 +133,9 @@ npm run e2e            # the built app in Chromium, against the mock
 The tests never call the Petiole API. The contract and end-to-end tests
 use a mock that [Prism](https://github.com/stoplightio/prism) serves from
 the API's spec as released with the installed `@petiole/sdk`
-(`openapi.yaml` of
-[getpetiole/petiole-sdk-typescript](https://github.com/getpetiole/petiole-sdk-typescript)
+([`openapi.yaml`](https://github.com/getpetiole/petiole-sdk-typescript/blob/v0.1.1/openapi.yaml)
 at its version's tag), so a new SDK brings its spec to the tests. Last
-tested with `@petiole/sdk` X.Y.Z, API v1.
+tested with `@petiole/sdk` 0.1.1, API v1.
 
 ## Licence
 

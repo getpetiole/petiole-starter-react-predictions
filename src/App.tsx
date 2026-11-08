@@ -1,14 +1,15 @@
 // The app: the key first, checked against the API, which also says the
-// models it may use. A starter puts what it does where the list of models
-// is.
+// organisation's models; then the leaf detector on a photo.
 import { ApiError, type Model } from "@petiole/sdk";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { Detector } from "./components/Detector";
 import { KeyPanel } from "./components/KeyPanel";
 import { Problem } from "./components/Problem";
 import { clearKey, type KeyPlace, readKey, saveKey } from "./lib/key";
-import { type Shown, shown } from "./lib/messages";
-import { petiole } from "./lib/petiole";
+import { messageFor, type Shown, shown } from "./lib/messages";
+import { MODEL_ID } from "./lib/model";
+import { KEYS_URL, petiole } from "./lib/petiole";
 
 type Access =
   | { kind: "checking" }
@@ -19,7 +20,7 @@ type Access =
   | { kind: "open"; key: string | null; place: KeyPlace | "site" | "page"; models: Model[] };
 
 /** What a key for this app needs. */
-const NEEDS = "the workflows it calls";
+const NEEDS = "the Leaf area workflow, which runs the leaf detector,";
 
 const WHERE: Record<Exclude<Extract<Access, { kind: "open" }>["place"], "site">, string> = {
   tab: "Your key is kept in this tab.",
@@ -76,12 +77,16 @@ export function App() {
     setAccess({ kind: "key", problem: null });
   }
 
+  const key = access.kind === "open" ? access.key : null;
+  const api = useMemo(() => petiole(key), [key]);
+  const model = access.kind === "open" ? access.models.find((each) => each.id === MODEL_ID) : undefined;
+
   return (
     <>
       <header className="top">
         <p className="brand">
           <span aria-hidden className="mark" />
-          Petiole API starter
+          Leaf detector
         </p>
         {access.kind === "open" ? (
           <div className="key-state">
@@ -100,8 +105,10 @@ export function App() {
       </header>
 
       <main className="page">
-        <h1>A Petiole API starter</h1>
-        <p className="lede">An app on the Petiole API, made from the starters&apos; skeleton.</p>
+        <h1>Find the leaves in a photo</h1>
+        <p className="lede">
+          The Petiole API&apos;s leaf detector finds each leaf in a photo and puts a box around it, with its confidence.
+        </p>
 
         {access.kind === "checking" ? <p aria-live="polite">Checking the key…</p> : null}
         {access.kind === "failed" ? (
@@ -115,29 +122,35 @@ export function App() {
           />
         ) : null}
         {access.kind === "key" ? <KeyPanel needs={NEEDS} problem={access.problem} onKey={tryKey} /> : null}
-        {access.kind === "open" ? (
-          <section className="card" aria-labelledby="models-title">
-            <h2 id="models-title">Your key works</h2>
-            {access.models.length ? (
-              <>
-                <p>It may use these models:</p>
-                <ul>
-                  {access.models.map((model) => (
-                    <li key={model.id}>
-                      {model.name}: {model.description}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : (
-              <p>It may use no models: its scopes include no workflow that runs one.</p>
-            )}
-          </section>
+        {access.kind === "open" && model && model.callable ? <Detector api={api} model={model} /> : null}
+        {access.kind === "open" && (!model || !model.callable) ? (
+          <Problem
+            title="This key can't use the leaf detector"
+            problem={{
+              message: model
+                ? messageFor("model_not_callable", 409)
+                : "Its organisation's workflows don't run the leaf detector, or the key's scopes leave them out. Make a key with the Leaf area workflow on Keys & access.",
+              requestId: null,
+              code: null,
+            }}
+          />
+        ) : null}
+        {access.kind === "open" && !model && access.place !== "site" ? (
+          <p>
+            <a href={KEYS_URL}>Make a key on Keys &amp; access</a>, then{" "}
+            <button type="button" className="button text" onClick={forget}>
+              use another key
+            </button>
+            .
+          </p>
         ) : null}
       </main>
 
       <footer className="bottom">
-        <p className="hint">Calls the Petiole API through this site&apos;s own function. Open source under MIT.</p>
+        <p className="hint">
+          Calls the Petiole API through this site&apos;s own function. Open source under MIT:{" "}
+          <a href="https://github.com/getpetiole/petiole-starter-react-predictions">copy it to build your own</a>.
+        </p>
       </footer>
     </>
   );

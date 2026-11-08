@@ -9,13 +9,17 @@ import { parse } from "yaml";
 
 import { specPath } from "../../scripts/prism.mjs";
 import { forward } from "../../server/forward.ts";
-import { ROUTES } from "../../server/routes.ts";
+import { MODEL_ID, ROUTES } from "../../server/routes.ts";
 import { knownCodes } from "../../src/lib/messages";
 import { PRISM_URL } from "./prism";
 
 const KEY = `ptl_live_${"a1B2".repeat(10)}xyz`;
 const SITE = "http://site.test";
 const METHODS = ["get", "post", "put", "patch", "delete"];
+// The smallest JPEG's bytes do: Prism reads the form, not the photo.
+const PHOTO = new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0, 16, 0x4a, 0x46, 0x49, 0x46, 0, 1, 0xff, 0xd9])], {
+  type: "image/jpeg",
+});
 
 const spec = parse(readFileSync(await specPath(), "utf8"));
 
@@ -34,13 +38,14 @@ function site(siteKey?: string) {
 }
 
 describe("through the site's function", () => {
-  it("checks the key with the visitor's key", async () => {
+  it("lists the models with the visitor's key", async () => {
     const { api } = site();
     const list = await api(KEY).models.list({ limit: 100 });
     expect(list.object).toBe("list");
+    expect(Array.isArray(list.data)).toBe(true);
   });
 
-  it("checks it with the site's own key when the page sends none", async () => {
+  it("lists them with the site's own key when the page sends none", async () => {
     const { api } = site(KEY);
     expect((await api(null).models.list()).object).toBe("list");
   });
@@ -53,6 +58,20 @@ describe("through the site's function", () => {
     expect(upstream).toEqual([]);
   });
 
+  it("gets the model and its state", async () => {
+    const { api } = site();
+    expect((await api(KEY).models.get(MODEL_ID)).object).toBe("model");
+    const status = await api(KEY).models.status(MODEL_ID);
+    expect(["ready", "starting", "unavailable"]).toContain(status.status);
+  });
+
+  it("predicts on a photo, as the page asks", async () => {
+    const { api } = site();
+    const prediction = await api(KEY).models.predict(MODEL_ID, PHOTO, { confThreshold: 0.1, maxDetections: 300 });
+    expect(prediction.object).toBe("prediction");
+    expect(Array.isArray(prediction.detections)).toBe(true);
+  });
+
   it("refuses every other route of the API, and tricks, without calling the API", async () => {
     const { call, upstream } = site(KEY);
     const refused: [string, string][] = [];
@@ -62,7 +81,14 @@ describe("through the site's function", () => {
         if (!ROUTES.some((route) => route.method === method && route.path === path)) refused.push([method, `/api${path}`]);
       }
     }
-    refused.push(["GET", "/api/v1/models/../usage"], ["GET", "/api/v1/models%2F..%2Fusage"], ["GET", "/v1/models"], ["DELETE", "/api/v1/models"]);
+    refused.push(
+      ["GET", "/api/v1/models/sam2-small/status"],
+      ["POST", "/api/v1/models/sam2-small/predictions"],
+      ["GET", `/api/v1/models/${MODEL_ID}/../../usage`],
+      ["GET", `/api/v1/models/${MODEL_ID}%2Fstatus`],
+      ["GET", "/v1/models"],
+      ["DELETE", "/api/v1/models"],
+    );
     expect(refused.length).toBeGreaterThan(10);
     for (const [method, path] of refused) {
       const response = await call(new Request(`${SITE}${path}`, { method, headers: { authorization: `Bearer ${KEY}` } }));
@@ -74,8 +100,9 @@ describe("through the site's function", () => {
   it("logs a line a request, and never the key", async () => {
     const { api, lines } = site(KEY);
     await api(KEY).models.list();
-    await api(null).models.list();
-    expect(lines).toHaveLength(2);
+    await api(null).models.status(MODEL_ID);
+    await api(KEY).models.predict(MODEL_ID, PHOTO);
+    expect(lines).toHaveLength(3);
     for (const line of lines) {
       expect(line).not.toContain(KEY);
       expect(Object.keys(JSON.parse(line)).sort()).toEqual(["method", "ms", "requestId", "route", "status"]);
