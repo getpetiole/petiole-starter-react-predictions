@@ -1,0 +1,22 @@
+{
+  // What runs on Node: the function and its forwarding, the configs, the
+  // scripts and the tests.
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["server", "netlify", "test", "e2e", "scripts", "vite.config.ts", "vitest.config.ts", "vitest.contract.config.ts", "playwright.config.ts", "eslint.config.js"]
+}

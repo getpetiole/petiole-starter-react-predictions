@@ -1,0 +1,16 @@
+# Dependabot: the npm packages weekly, the minor and patch updates in one
+# pull request, a major on its own; the workflows' actions monthly. A new
+# @petiole/sdk brings the API's spec it was released with to the tests.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

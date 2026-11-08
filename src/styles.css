@@ -1,0 +1,446 @@
+/* The app's look: a few tokens, light and dark, the system's fonts, and
+   targets of at least 44 px. Nothing is loaded from anywhere else. */
+:root {
+  --bg: #fbfbf8;
+  --surface: #ffffff;
+  --text: #1c211d;
+  --muted: #59605a;
+  --border: #d5d9d3;
+  --primary: #2f6b3a;
+  --primary-text: #ffffff;
+  --focus: #1f5fbf;
+  --danger: #b3261e;
+  --danger-bg: #fdf0ef;
+  --ready: #2f8a3e;
+  --starting: #b26a00;
+  --unavailable: #7a807b;
+  --radius: 8px;
+  --space: 16px;
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131613;
+    --surface: #1b1f1c;
+    --text: #e8ebe7;
+    --muted: #a9b0aa;
+    --border: #3a403b;
+    --primary: #7fc48a;
+    --primary-text: #0f1a11;
+    --focus: #8ab4ff;
+    --danger: #ff8a80;
+    --danger-bg: #2b1a19;
+    --ready: #7fc48a;
+    --starting: #f0b04a;
+    --unavailable: #8e958f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--primary);
+  text-underline-offset: 3px;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.top,
+.page,
+.bottom {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.mark {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: var(--primary);
+}
+
+.key-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.key-state p {
+  margin: 0;
+}
+
+h1 {
+  margin: 8px 0;
+  font-size: 1.75rem;
+  line-height: 1.25;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 1.25rem;
+}
+
+.lede {
+  max-width: 65ch;
+  margin: 0 0 24px;
+  color: var(--muted);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+}
+
+.card {
+  max-width: 65ch;
+  padding: var(--space);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.card p {
+  margin: 0 0 12px;
+}
+
+.model {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: none;
+}
+
+.model p {
+  margin: 0;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--space);
+}
+
+.field > .hint {
+  margin: 0;
+}
+
+label {
+  font-weight: 600;
+}
+
+input[type="password"],
+input[type="text"] {
+  min-height: 44px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+input[type="range"] {
+  width: 100%;
+  max-width: 420px;
+  min-height: 44px;
+  accent-color: var(--primary);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-weight: 400;
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary);
+}
+
+.field-error {
+  color: var(--danger);
+}
+
+.field-error p {
+  margin: 0;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button.primary {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+
+.button.secondary {
+  border-color: var(--muted);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.button.text {
+  min-height: 44px;
+  padding: 0 4px;
+  background: none;
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.button:disabled,
+.button.disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+label.button:focus-within {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--border);
+}
+
+.dot.ready {
+  background: var(--ready);
+}
+
+.dot.starting {
+  background: var(--starting);
+}
+
+.dot.unavailable {
+  background: var(--unavailable);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dot.starting {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.drop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 24px var(--space);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.drop p {
+  margin: 0;
+}
+
+.drop.over {
+  border-color: var(--primary);
+}
+
+.stage p {
+  margin: 0;
+}
+
+.problem {
+  max-width: 65ch;
+  padding: var(--space);
+  border: 1px solid var(--danger);
+  border-left-width: 6px;
+  border-radius: var(--radius);
+  background: var(--danger-bg);
+}
+
+.problem p {
+  margin: 0 0 8px;
+}
+
+.problem-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--danger);
+}
+
+.problem-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: var(--danger-bg);
+  font-size: 0.875rem;
+}
+
+.found {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space);
+}
+
+/* The photo as large as fits, no taller than the window, and what was
+   found drawn over exactly it. */
+.photo {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.photo img {
+  display: block;
+  max-width: 100%;
+  max-height: 85vh;
+  width: auto;
+  height: auto;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.counts {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+th,
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.number-text {
+  font-variant-numeric: tabular-nums;
+}
+
+.bottom {
+  margin-top: 32px;
+  border-top: 1px solid var(--border);
+}

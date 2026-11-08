@@ -1,0 +1,24 @@
+# The site on Netlify: the app built by Vite into dist, the function in
+# netlify/functions (the site's /api), and every page's headers. The
+# function calls the Petiole API; nothing else is loaded from anywhere but
+# the site itself.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    Referrer-Policy = "no-referrer"
+    X-Content-Type-Options = "nosniff"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Permissions-Policy = "microphone=(), geolocation=()"

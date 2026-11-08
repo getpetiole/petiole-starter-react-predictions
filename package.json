@@ -1,0 +1,43 @@
+{
+  "name": "petiole-starter-react-skeleton",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The skeleton every Petiole API web starter is made from: a React app on Netlify that takes an API key and checks it.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.app.json && tsc -p tsconfig.node.json",
+    "test": "vitest run",
+    "test:contract": "vitest run --config vitest.contract.config.ts",
+    "e2e": "playwright test",
+    "mock": "node scripts/prism.mjs 4010"
+  },
+  "dependencies": {
+    "@petiole/sdk": "0.1.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.0",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.2.1",
+    "eslint": "10.14.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.14.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "8.3.6",
+    "vitest": "5.1.0",
+    "yaml": "2.9.1"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
